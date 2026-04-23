@@ -1,0 +1,7 @@
+Fold:	1/7	-	Loss:	0.16784
+Fold:	2/7	-	Loss:	0.09775
+Fold:	3/7	-	Loss:	0.17216
+Fold:	4/7	-	Loss:	0.52945
+Fold:	5/7	-	Loss:	0.17401
+Fold:	6/7	-	Loss:	0.09410
+Fold:	7/7	-	Loss:	0.13248

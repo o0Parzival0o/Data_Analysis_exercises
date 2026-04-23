@@ -1,0 +1,10 @@
+Fold:	1/10	-	Loss:	0.16608
+Fold:	2/10	-	Loss:	0.14386
+Fold:	3/10	-	Loss:	0.09367
+Fold:	4/10	-	Loss:	0.20323
+Fold:	5/10	-	Loss:	0.21247
+Fold:	6/10	-	Loss:	0.56508
+Fold:	7/10	-	Loss:	0.21542
+Fold:	8/10	-	Loss:	0.10529
+Fold:	9/10	-	Loss:	0.17345
+Fold:	10/10	-	Loss:	0.09075

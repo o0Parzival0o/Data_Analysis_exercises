@@ -1,0 +1,5 @@
+Fold:	1/5	-	Loss:	0.15953
+Fold:	2/5	-	Loss:	0.15934
+Fold:	3/5	-	Loss:	0.35279
+Fold:	4/5	-	Loss:	0.16419
+Fold:	5/5	-	Loss:	0.13185
