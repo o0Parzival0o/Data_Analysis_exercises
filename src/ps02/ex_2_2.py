@@ -11,6 +11,8 @@ import os
 os.makedirs("results", exist_ok=True)
 import pandas as pd
 
+filename = os.path.splitext(os.path.basename(__file__))[0]
+
 logging.basicConfig(
         level  = logging.INFO,
         format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -138,5 +140,5 @@ plt.xlabel("Train Fraction")
 plt.ylabel("Loss (MSE)")
 plt.legend()
 plt.tight_layout()
-plt.savefig("results/ex_2_2_loss_vs_train_fraction.pdf")
+plt.savefig(f"results/{filename}_loss_vs_train_fraction.pdf")
 plt.show()

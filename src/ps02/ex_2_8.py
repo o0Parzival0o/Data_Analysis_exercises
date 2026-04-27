@@ -11,6 +11,8 @@ import os
 os.makedirs("results", exist_ok=True)
 import pandas as pd
 
+filename = os.path.splitext(os.path.basename(__file__))[0]
+
 logging.basicConfig(
         level  = logging.INFO,
         format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -146,7 +148,7 @@ for fold, (train_idx, test_idx) in enumerate(kfold.split(X)):
             best_test_loss = test_loss
             # logger.info(f"\tNew best test loss:{best_test_loss}")
 
-    with open(f"results/ex_2_7_best_test_error_{num_folds}_folds.txt", "a") as f:
+    with open(f"results/{filename}_best_test_error_{num_folds}_folds.txt", "a") as f:
         f.write(f"Fold:\t{fold+1}/{num_folds}\t-\tLoss:\t{best_test_loss:.5f}\n")
 
     ALL_TRAIN_LOSS[fold] = TRAIN_LOSS
@@ -162,5 +164,5 @@ plt.xlabel("Epochs")
 plt.ylabel("Loss (MSE)")
 plt.legend()
 plt.tight_layout()
-plt.savefig(f"results/ex_2_8_{num_folds}_folds.pdf")
+plt.savefig(f"results/{filename}_{num_folds}_folds.pdf")
 plt.show()
