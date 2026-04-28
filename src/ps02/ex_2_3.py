@@ -4,15 +4,15 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import make_pipeline
 from sklearn.metrics import mean_squared_error
-from sklearn.preprocessing import StandardScaler
+import os
+filename = os.path.splitext(os.path.basename(__file__))[0]
 
 
 SEED = 42
 np.random.seed(SEED)
-max_patience = 5
-relative_eps = 1e-3
 data_degree = 10
-max_degree_try = 50
+fit_degrees = np.arange(1, 51)
+lambda_reg = 1e-3
 
 
 def polynomial_func(X, coeffs):
@@ -48,30 +48,23 @@ y_test_nu = generate_data_non_uniform(X_test, func_params, *err_params)
 y_test_u = generate_data_uniform(X_test, func_params, *err_params)
 X_test = X_test.reshape(-1, 1)
 
-X_grid = np.linspace(-1., 1., 500).reshape(-1, 1)
+
+# plt.figure(figsize=(10, 6))
+# plt.scatter(X_train, y_train_u, c="g", marker=".", label="data uniform")
+# plt.scatter(X_train, y_train_nu, c="r", marker=".", label="data non uniform")
 
 
-plt.figure(figsize=(10, 6))
-plt.scatter(X_train, y_train_u, c="g", marker=".", label="data uniform")
-plt.scatter(X_train, y_train_nu, c="r", marker=".", label="data non uniform")
-
-
-degs = range(1, max_degree_try+1)
 loss_train_u = []
-loss_test_u = []
-best_loss_u = float(np.inf)
-current_patience_u = max_patience
-degree_list_u = []
+risk_u       = []
+loss_test_u  = []
+best_loss_u  = float(np.inf)
 loss_train_nu = []
-loss_test_nu = []
-best_loss_nu = float(np.inf)
-current_patience_nu = max_patience
-degree_list_nu = []
+risk_nu       = []
+loss_test_nu  = []
+best_loss_nu  = float(np.inf)
 
-for deg in degs:
-
-    if current_patience_u == 0:
-        break
+# uniform
+for deg in fit_degrees:
     
     poly_u = make_pipeline(
         PolynomialFeatures(degree=deg),
@@ -79,56 +72,50 @@ for deg in degs:
     )
     poly_u.fit(X_train, y_train_u)
     y_pred_u = poly_u.predict(X_train)
-    loss_train_u.append(mean_squared_error(y_train_u, y_pred_u))
+    train_loss_u = mean_squared_error(y_train_u, y_pred_u)
+    loss_train_u.append(train_loss_u)
+    risk_u.append(train_loss_u + lambda_reg * deg)
     y_test_pred_u = poly_u.predict(X_test)
-    loss_u = mean_squared_error(y_test_u, y_test_pred_u)
-    loss_test_u.append(loss_u)
-    
-    if loss_u < best_loss_u * (1 - relative_eps):
-        best_loss_u = loss_u
-        current_patience_u = max_patience
-    else:
-        current_patience_u -= 1
-    
-    degree_list_u.append(deg)
-    
+    loss_test_u.append(mean_squared_error(y_test_u, y_test_pred_u))
 
-for deg in degs:
 
-    if current_patience_nu == 0:
-        break
+# non uniform
+sigma = err_params[1] * (1 + X_train.flatten()**2)
+weights = 1 / sigma**2
+for deg in fit_degrees:
 
     poly_nu = make_pipeline(
         PolynomialFeatures(degree=deg),
         LinearRegression()
     )
-    poly_nu.fit(X_train, y_train_nu)
+    poly_nu.fit(X_train, y_train_nu, linearregression__sample_weight=weights)
     y_pred_nu = poly_nu.predict(X_train)
-    loss_train_nu.append(mean_squared_error(y_train_nu, y_pred_nu))
+    train_loss_nu = mean_squared_error(y_train_nu, y_pred_nu)
+    loss_train_nu.append(train_loss_nu)
+    risk_nu.append(train_loss_nu + lambda_reg * deg)
     y_test_pred_nu = poly_nu.predict(X_test)
-    loss_nu = mean_squared_error(y_test_nu, y_test_pred_nu)
-    loss_test_nu.append(loss_nu)
-
-    if loss_nu < best_loss_nu * (1 - relative_eps):
-        best_loss_nu = loss_nu
-        current_patience_nu = max_patience
-    else:
-        current_patience_nu -= 1
-    
-    degree_list_nu.append(deg)
+    loss_test_nu.append(mean_squared_error(y_test_nu, y_test_pred_nu))
 
 
 plt.figure(figsize=(10, 6))
-plt.plot(degree_list_u, loss_train_u, c='r', ls='-', lw=1, label="train uniform")
-plt.plot(degree_list_u, loss_test_u, c='b', ls='--', lw=1, label="test uniform")
-plt.plot(degree_list_nu, loss_train_nu, c='r', ls='-', lw=3, label="train non uniform")
-plt.plot(degree_list_nu, loss_test_nu, c='b', ls='--', lw=3, label="test non uniform")
+plt.plot(fit_degrees, risk_u, ls='-', lw=1, label="SRM risk (uniform)")
+plt.plot(fit_degrees, risk_nu, ls='-', lw=2, label="SRM risk (non uniform)")
+plt.plot(fit_degrees, loss_train_u, c='r', ls='-', lw=1, label="train (uniform)")
+plt.plot(fit_degrees, loss_test_u, c='b', ls='--', lw=1, label="test (uniform)")
+plt.plot(fit_degrees, loss_train_nu, c='r', ls='-', lw=2, label="train (non uniform)")
+plt.plot(fit_degrees, loss_test_nu, c='b', ls='--', lw=2, label="test (non uniform)")
 plt.xlabel("degree")
 plt.ylabel("loss")
 plt.yscale("log")
 plt.legend()
 plt.tight_layout()
+plt.savefig(f"results/{filename}.pdf")
 plt.show()
 
-print(f"Best Loss (uniform):     {best_loss_u:.4}\n"
-      f"Best Loss (non uniform): {best_loss_nu:.4}")
+best_idx_u  = np.argmin(risk_u)
+best_idx_nu = np.argmin(risk_nu)
+
+print(f"Best Risk (uniform):       {risk_u[best_idx_u]:.4f}")
+print(f"Best Degree (uniform):     {fit_degrees[best_idx_u]}")
+print(f"Best Risk (non uniform):   {risk_nu[best_idx_nu]:.4f}")
+print(f"Best Degree (non uniform): {fit_degrees[best_idx_nu]}")
