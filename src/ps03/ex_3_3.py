@@ -1,3 +1,11 @@
+'''
+Exercise 3.3. Analyse training and test error in
+dependence of the parameter λ with ridge re-
+gression and lasso on the dataset Ames. Pro-
+duce a picture of coefficients values with re-
+spect to λ (estimate the test error with CV).
+'''
+
 from sklearn.model_selection import KFold
 from sklearn.datasets import fetch_openml
 from sklearn.metrics import mean_squared_error
